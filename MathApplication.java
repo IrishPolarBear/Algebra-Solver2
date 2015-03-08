@@ -101,7 +101,12 @@ public class MathApplication extends JFrame implements ActionListener{
 
 		SubQuation sq = new SubQuation(eqText);
 		
-		test = sq.returnTest();
+		//test = sq.returnTest();
+		//test = test + "\n" + sq.testValue;
+		
+		test = sq.getDistributiveTerms();
+		
+		test = test + "\n" + sq.returnTest();
 		
 		outputText.setText(test);
 	}

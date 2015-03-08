@@ -4,7 +4,7 @@ public class SubQuation {
 	private ArrayList<Term> listTerms;
 	private ArrayList<String> termFunctions;
 	private ArrayList<String> groupings;
-	private ArrayList<String> groupCode;
+	private HashMap<String, Integer> groupCode;
 	private ArrayList<Integer> groupExponents;
 	private boolean test;
 	private String newEquation;
@@ -20,7 +20,7 @@ public class SubQuation {
 		listTerms = new ArrayList<Term>(0);
 		termFunctions = new ArrayList<String>(0);
 		groupings = new ArrayList<String>(0);
-		groupCode = new ArrayList<String>(0);
+		groupCode = new HashMap<String,Integer>();
 		groupExponents = new ArrayList<Integer>(0);
 		String delim2 = "[+\\-*/]+";
 		
@@ -36,8 +36,23 @@ public class SubQuation {
 		determineGroupings(terms);
 		getFunctions(newEquation,terms);
 		for (int i = 0; i < terms.length; i++){
+			if (terms[i].contains("(") && (terms[i].length() == 1)){
+				continue;
+			} 
 			listTerms.add(new Term(terms[i]));
 		}
+	}
+	
+	public String printAllTerms(){
+		int val;
+		String checkValue;
+
+		val = listTerms.size();
+		checkValue = "";
+		for (int i = 0; i < val; i++){
+			checkValue = checkValue + listTerms.get(i).printTerm();
+		}
+		return checkValue;
 	}
 
 	private void getFirstFunctions(String sides){
@@ -49,24 +64,6 @@ public class SubQuation {
 		} else {
 			termFunctions.add("+");
 		}
-		//String subSide1, subSide2;
-		//String test;
-		//test = sides[0];
-		//subSide1 = sides[0].substring(0,1);
-		//subSide2 = sides[1].substring(0,1);
-		
-		//if (subSide1.equals("-")){
-		//	leftFunctions.add("-");
-		//}
-		//else {
-		//	leftFunctions.add("+");
-		//}
-		//if (subSide2.equals("-")){
-		//	rightFunctions.add("-");
-		//}
-		//else {
-		//	rightFunctions.add("+");
-		//}
 	}
 	
 	private void determineGroupings(String[] arg){
@@ -75,25 +72,26 @@ public class SubQuation {
 		String[] code = {"a","b","c","d","e","f","g","h","i","j","k","l"};
 		
 		testValue = "";
+		groupValue = 0;
 		groupValue = groupCode.size();
 		for(int i = 0; i < arg.length; i++){
 			if (arg[i].contains("(")){
 				grouped = true;
-				//groupings.add(code[groupValue]);
 			}
 			testValue = testValue + arg[i] + "##" + String.valueOf(grouped);
-			if (grouped){
+			if (grouped && !arg[i].equals("(")){
 				groupNum = groupNum + 1;
 				groupings.add(code[groupValue]);
 				testValue = testValue + "Yo";
 			} else {
-				groupings.add("null");
-				testValue = testValue + "ho";
+				if (!arg[i].equals("(")){
+					groupings.add("null");
+					testValue = testValue + "ho";
+				}
 			}
 			if (arg[i].contains(")")){
 				grouped = false;
-				String translatedValue = String.valueOf(groupNum) + code[groupValue];
-				groupCode.add(translatedValue);
+				groupCode.put(code[groupValue], new Integer(groupNum));
 				groupExponents.add(1);
 				groupNum = 0;
 				groupValue = groupValue + 1;
@@ -111,10 +109,6 @@ public class SubQuation {
 		for (int i = 0; i < val; i++){
 			returnValue = returnValue + groupings.get(i);	
 		}
-		val = groupCode.size();
-		for (int j = 0; j < val; j++){
-			returnValue = returnValue + groupCode.get(j);
-		}
 		returnValue = returnValue + "\n";
 		val = termFunctions.size();
 		for (int k = 0; k < val; k++){
@@ -123,47 +117,160 @@ public class SubQuation {
 		return returnValue;
 	}
 	
-	private void getFunctions(String side, String[] values){
-		int cursor = 0;
-		char c;
+	public String getDistributiveTerms(){
+		int groupSize, groupLocation, numGrouped;
+		String groupDetermination;
+		ArrayList<Term> termHolder;
+		Term multiplier;
+		boolean found = false;
 
+		termHolder = new ArrayList<Term>();
+		groupSize = groupings.size();
+		groupLocation = 0;
+		for (int i = 0; i < groupSize; i++){
+			groupDetermination = groupings.get(i);
+			if (groupDetermination.equals("a") && !(found)){
+				groupLocation = i;
+				found = true;
+			}
+		}
+		multiplier = listTerms.get(groupLocation-1);
+		testValue = multiplier.printTerm();
+		numGrouped = groupCode.get("a");
+		for (int i = groupLocation; i < groupLocation + 2; i++){
+			termHolder.add(listTerms.get(i));
+		}
+		testValue = testValue + "$$" + String.valueOf(numGrouped);
+		for (int i = 0; i < termHolder.size(); i ++){
+			testValue = testValue + termHolder.get(i).printTerm();
+		}
+	
+		testValue = distribute(multiplier, termHolder, groupLocation);
+		
+		return testValue;
+	}
+	
+	private String	distribute(Term distributor, ArrayList<Term> terms, int cursor){
+		int numTerms, newMagnitude, order = 1, directionMag1, directionMag2;
+		String variable, tempVariable, newVariable, retValue;
+		boolean undet;
+		ArrayList<Term> newTerms;
+		ArrayList<String> newFunctions;
+		
+		newMagnitude = 0;
+		numTerms = terms.size();
+		variable = distributor.getVariable();
+		newTerms = new ArrayList<Term>();
+		newFunctions = new ArrayList<String>();
+		directionMag1 = getFunctionValue (cursor-1);
+		for (int i = 0; i < numTerms; i++){
+			directionMag2 = getFunctionValue(cursor + i + 1);
+			newMagnitude = ((directionMag1 * distributor.getMagnitude()) * (directionMag2 * terms.get(i).getMagnitude()));
+			tempVariable = terms.get(i).getVariable();
+			if (variable.equals("NULL")){
+				if (tempVariable.equals("NULL")){
+					newVariable = "NULL";
+				} else {
+					newVariable = tempVariable;
+				}
+			} else {
+				if (tempVariable.equals("NULL")){
+					newVariable = variable;
+				} else {
+					newVariable = variable + tempVariable;
+				}
+			}
+			if (newVariable.equals("NULL")){
+				undet = false;
+			} else {
+				undet = true;
+			}
+			if (newMagnitude < 0) {
+				newFunctions.add("-");
+				newMagnitude = Math.abs(newMagnitude);
+			} else {
+				newFunctions.add("+");
+			}
+			newTerms.add(new Term(newMagnitude,newVariable,undet,order));		
+		}
+		
+		numTerms = newTerms.size();
+		retValue = "";
+		for (int i = 0; i < numTerms; i++) {
+			retValue = retValue + newTerms.get(i).printTerm();
+		}
+		consolidateTerms(newTerms, newFunctions,cursor);
+		return retValue;
+	}
+	
+	private void consolidateTerms(ArrayList<Term> newTerms, ArrayList<String> newFunctions, int cursor){
+		int num;
+		
+		num = newTerms.size();		
+		removeFunctions(cursor, num);
+		removeTerms(cursor, num);
+		
+		for (int i = 0; i < num; i++){
+			listTerms.add(newTerms.get(i));
+			termFunctions.add(newFunctions.get(i));
+		}
+		
+	}
+	
+	private void removeTerms(int cursor, int num){
+		int length, funcNum;
+		
+		length = num + 1;
+		funcNum = cursor -1;
+		for (int i = 0; i < length; i++){
+			listTerms.remove(funcNum);
+		}
+	}
+		
+	private void removeFunctions(int cursor, int num){
+		int length, funcNum;
+		
+		length = num + 2;
+		funcNum = cursor - 1;
+		for (int i = 0; i < length; i ++){
+			termFunctions.remove(funcNum);
+		}
+	}
+	
+	private void getFunctions(String side, String[] values){
+		int cursor = 0, distributeCheck;
+		char c;
+		String value;
+		
+		testValue = "";
 		for (int i = 0; i < values.length-1; i++) {
 			if (i == 0){
 				cursor = values[i].length();
 			} else {
 				cursor = cursor + values[i].length() + 1;
 			}
+			testValue = testValue + values[i] + "$$" + values[i+1] + "##";
 			if (values[i].length() > 0) {
-				c = side.charAt(cursor);
-				termFunctions.add(new String(Character.toString(side.charAt(cursor))));
+				if ((values[i+1].contains("(")) && (values[i+1].length() == 1)){
+						termFunctions.add("*");
+						termFunctions.add("-");
+						i++;
+						cursor = cursor + values[i+1].length();
+						testValue = testValue + "HERE";
+				} else {
+					if (values[i+1].contains("(")){
+						termFunctions.add("*");
+						termFunctions.add("+");
+						testValue = testValue + "BADA";
+					} else {
+						c = side.charAt(cursor);
+						termFunctions.add(new String(Character.toString(side.charAt(cursor))));
+						testValue = testValue + "BING";
+					}
+				}
 			}
 		}
 	}
-
-//	private void getFunctions(String side, String[] values, int k){
-//		int cursor = 0;
-//		String holder;
-//		char c;		
-//		
-//		
-//		for (int i = 0; i < values.length-1; i++){
-//			if (i == 0){
-//				cursor = values[i].length();
-//			}
-//			else {
-//				cursor = cursor + values[i].length() + 1;
-//			}
-//			if (values[i].length() > 0) {
-//				if (k == 0){
-//					c = side.charAt(cursor);
-//					leftFunctions.add(new String(Character.toString(side.charAt(cursor))));
-//				}
-//				else {
-//					rightFunctions.add(new String(Character.toString(side.charAt(cursor))));
-//				}
-//			}
-//		}
-//	}
 
 	private String rewriteEquationDistribution(String arg){
 		int placement = 0, placement2 = 0;
@@ -187,16 +294,6 @@ public class SubQuation {
 		return nq;		
 	}
 	
-	private void distributiveProperty(){
-		
-	}
-	
-	//private boolean checkCompleteTerm(String arg){
-//	}
-	
-//	private String removeOuterParenthesis(String arg){
-//	}
-	
 	private boolean checkParenthesis(String arg){
 		boolean found = false;
 		int openParenthesis = 0, closeParenthesis = 0;
@@ -218,7 +315,18 @@ public class SubQuation {
 			found = true;
 		}
 		return found;
+	}
+	
+	public int getFunctionValue(int num){
+		String func;
 		
+		func = termFunctions.get(num);
+		if (func.equals("-")){
+			return -1;
+		}
+		else{
+			return 1;
+		}
 	}
 	
 	public String breakIntoTerms(){

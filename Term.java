@@ -17,7 +17,7 @@ public class Term {
 	
 	/* Constructor that takes a string of "3x" as an argument */
 	public Term(String arg){
-		String magn,var,ord;
+		String magn,var,ord, formatRepresentation;
 		boolean exp = false;
 		magn = "";
 		var = "";
@@ -48,7 +48,9 @@ public class Term {
 		} else {
 			order = Integer.parseInt(ord);
 		}
-		representation = arg;
+		formatRepresentation = arg.replace("(","");
+		formatRepresentation = formatRepresentation.replace(")","");
+		representation = formatRepresentation;
 		magnitude = Integer.parseInt(magn);
 	}
 	
