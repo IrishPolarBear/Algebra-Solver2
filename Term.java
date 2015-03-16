@@ -23,6 +23,10 @@ public class Term {
 		var = "";
 		ord = "";
 		undeterminate = false;
+		char c = arg.charAt(0);
+		if ((arg.length() == 1) && (Character.isLetter(c))) {
+			arg = "1" + arg;
+		}
 		char[] argArray = arg.toCharArray(); 
 		for (int i = 0; i <argArray.length; i++){
 			if (Character.isDigit(argArray[i]) && !exp){

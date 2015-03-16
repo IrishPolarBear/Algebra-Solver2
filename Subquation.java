@@ -66,6 +66,55 @@ public class SubQuation {
 		}
 	}
 	
+	public String displayEquation(){
+		String eq, sign, groupVar, varKey;
+		int length, groupNum, funcNum;
+
+		eq = "";
+		eq = signCheck(0);
+		length = groupings.size();
+		groupNum = 0;
+		funcNum = 0;
+		for (int i = 0; i < length; i++){
+			varKey = groupings.get(i);
+			if (varKey.equals("NULL")){
+				if (i == 0) {
+					eq = eq + listTerms.get(i).getRepresentation();
+					funcNum++;
+				} else {
+					eq = eq + termFunctions.get(funcNum) + listTerms.get(i).getRepresentation();
+					funcNum++;
+				}
+			} else {
+				if (groupNum == 0){
+					eq = eq + "*(" + signCheck(funcNum+1) + listTerms.get(i).getRepresentation();
+					funcNum += 2;
+					groupNum = 1;
+				} else {
+					groupNum++;
+					eq = eq + termFunctions.get(funcNum) + listTerms.get(i).getRepresentation();
+					if (groupNum == groupCode.get(varKey)){
+						eq = eq + ")";
+					}
+				}
+			}
+		}	
+		
+		return eq;
+	}
+	
+	private String signCheck(int num){
+		String sign, retValue;
+		
+		retValue = "";
+		sign = termFunctions.get(num);
+		if (sign.equals("-")){
+			retValue = "-";
+		}
+		
+		return retValue;
+	}
+	
 	private void determineGroupings(String[] arg){
 		int groupNum = 0, groupValue;
 		boolean grouped = false;
@@ -85,7 +134,7 @@ public class SubQuation {
 				testValue = testValue + "Yo";
 			} else {
 				if (!arg[i].equals("(")){
-					groupings.add("null");
+					groupings.add("NULL");
 					testValue = testValue + "ho";
 				}
 			}
@@ -117,7 +166,7 @@ public class SubQuation {
 		return returnValue;
 	}
 	
-	public String getDistributiveTerms(){
+	public void getDistributiveTerms(String var){
 		int groupSize, groupLocation, numGrouped;
 		String groupDetermination;
 		ArrayList<Term> termHolder;
@@ -129,28 +178,28 @@ public class SubQuation {
 		groupLocation = 0;
 		for (int i = 0; i < groupSize; i++){
 			groupDetermination = groupings.get(i);
-			if (groupDetermination.equals("a") && !(found)){
+			if (groupDetermination.equals(var) && !(found)){
 				groupLocation = i;
 				found = true;
 			}
 		}
 		multiplier = listTerms.get(groupLocation-1);
-		testValue = multiplier.printTerm();
-		numGrouped = groupCode.get("a");
+	//	testValue = multiplier.printTerm();
+		numGrouped = groupCode.get(var);
 		for (int i = groupLocation; i < groupLocation + 2; i++){
 			termHolder.add(listTerms.get(i));
 		}
-		testValue = testValue + "$$" + String.valueOf(numGrouped);
-		for (int i = 0; i < termHolder.size(); i ++){
-			testValue = testValue + termHolder.get(i).printTerm();
-		}
+	//	testValue = testValue + "$$" + String.valueOf(numGrouped);
+	//	for (int i = 0; i < termHolder.size(); i ++){
+	//		testValue = testValue + termHolder.get(i).printTerm();
+	//	}
 	
-		testValue = distribute(multiplier, termHolder, groupLocation);
+		distribute(multiplier, termHolder, groupLocation, var);
 		
-		return testValue;
+	//	return testValue;
 	}
 	
-	private String	distribute(Term distributor, ArrayList<Term> terms, int cursor){
+	private void distribute(Term distributor, ArrayList<Term> terms, int cursor, String groupVar){
 		int numTerms, newMagnitude, order = 1, directionMag1, directionMag2;
 		String variable, tempVariable, newVariable, retValue;
 		boolean undet;
@@ -195,26 +244,38 @@ public class SubQuation {
 		}
 		
 		numTerms = newTerms.size();
-		retValue = "";
-		for (int i = 0; i < numTerms; i++) {
-			retValue = retValue + newTerms.get(i).printTerm();
-		}
-		consolidateTerms(newTerms, newFunctions,cursor);
-		return retValue;
+	//	retValue = "";
+	//	for (int i = 0; i < numTerms; i++) {
+	//		retValue = retValue + newTerms.get(i).printTerm();
+	//	}
+		consolidateTerms(newTerms, newFunctions,cursor, groupVar);
+	//	return retValue;
 	}
 	
-	private void consolidateTerms(ArrayList<Term> newTerms, ArrayList<String> newFunctions, int cursor){
+	private void consolidateTerms(ArrayList<Term> newTerms, ArrayList<String> newFunctions, int cursor, String groupVar){
 		int num;
 		
 		num = newTerms.size();		
 		removeFunctions(cursor, num);
 		removeTerms(cursor, num);
-		
+		removeGroupingVariable(groupVar, cursor, num);
 		for (int i = 0; i < num; i++){
 			listTerms.add(newTerms.get(i));
 			termFunctions.add(newFunctions.get(i));
+			groupings.add("NULL");
 		}
 		
+	}
+	
+	private void removeGroupingVariable(String groupVar, int cursor, int num){
+		int length, funcNum;
+		
+		length = num + 1;
+		funcNum = cursor - 1;
+		groupCode.remove(groupVar);
+		for (int i = 0; i < length; i++){
+			groupings.remove(funcNum);	
+		}
 	}
 	
 	private void removeTerms(int cursor, int num){

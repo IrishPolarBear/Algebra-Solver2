@@ -94,21 +94,24 @@ public class MathApplication extends JFrame implements ActionListener{
 	} */
 
 	public void actionPerformed(ActionEvent e){
-		String test;
-		String eqText;
+		String eqText, output;
+		boolean eqCheck;		
 		
+		output = "";
 		eqText = equationText.getText();
-
-		SubQuation sq = new SubQuation(eqText);
-		
-		//test = sq.returnTest();
-		//test = test + "\n" + sq.testValue;
-		
-		test = sq.getDistributiveTerms();
-		
-		test = test + "\n" + sq.returnTest();
-		
-		outputText.setText(test);
+		EquationCheck ec = new EquationCheck(eqText);
+		eqCheck = ec.startChecking();
+		if (eqCheck) {
+			Equation eq = new Equation(eqText);
+			Algebra_Solver algebra = new Algebra_Solver(eq);
+			algebra.combineLikeTerms();
+			output = eq.testingApplication();
+			output = output + "\n\n SOMETHING \n";
+			output = output + eq.testValue;
+		} else {
+			output = ec.getErrorExplanation();
+		}
+		outputText.setText(output);
 	}
 
 	private void createAndShowGUI(){
