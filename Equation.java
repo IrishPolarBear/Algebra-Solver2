@@ -12,12 +12,14 @@ public class Equation {
 	private String newEquation;
 	public String testValue;
 	
-	//default constructor
+	/** Default constructor that will create the class object even if no arguments are passed.
+	Parameters: N/A */
 	public Equation(){
 		init = false;
 	}
 	
-	//constructor with the string of the equation argument
+	/**Class constructor that will create the class object with the equation variable
+	Parameters: (String arg), string value of the equation */
 	public Equation(String arg){
 		init = true;
 		String delim1 = "[=]";
@@ -55,6 +57,10 @@ public class Equation {
 		}
 	}
 	
+	/**Private function that is used by a constructor to determine the groupings within the distribution set
+	Parameters: (String[] arg), String array of all of the terms
+	(int num), integer value of the number of sides, almost always will be 2 (might be always)
+	Return: VOID*/
 	private void determineGroupings(String[] arg, int num){
 		int groupNum = 0, groupValue;
 		boolean grouped = false;
@@ -87,6 +93,9 @@ public class Equation {
 		eqGroupings.add(gc);
 	}
 	
+	/**Private function that is used to rewrite the equation into a form for the class to use; used if distributor set is found
+	Parameters: (String arg), string value of the old equation
+	Return: String, string value of the newly reformatted equation*/
 	private String rewriteEquationDistribution(String arg){
 		int placement = 0, placement2 = 0, cursor;
 		String nq, nt = "";
@@ -114,6 +123,9 @@ public class Equation {
 		return nq;		
 	}
 
+	/**Private function that checks to see if there are parenthesis in the equation
+	Parameters: (String arg), String value of the equation
+	Return: Boolean, returns true if any found, false otherwise */
 	private boolean checkParenthesis(String arg){
 		boolean found = false;
 		int openParenthesis = 0, closeParenthesis = 0;
@@ -138,6 +150,9 @@ public class Equation {
 		
 	}
 	
+	/**Private function that is use do get the first function of the equation
+	Parameters: (String value), string value of a side of the equation
+	Return: String, string value of the first function, positive or negative */
 	private String getFirstFunction (String value){
 		String subSide, retValue;
 		
@@ -151,6 +166,11 @@ public class Equation {
 		return retValue;
 	}
 	
+	/**Private function that gets all of the functions within the equation
+	Parameters:(String side), string value of a side of the equation
+	(String[] values, all of the terms in a string array value
+	(int k) numeric value of the side
+	Return: VOID */
 	private void getNewFunctions(String side, String[] values, int k){
 		int cursor = 0, length;
 		String value, subSide;
@@ -192,44 +212,51 @@ public class Equation {
 		eqFunctions.add(st);
 	}
 	
+	/**Public function that is used to get the length of the groupings on one side
+	Parameters: (int side), numerical value of the side
+	Return: Integer value of the length of the groupings ArrayList*/
+	public int getGroupLength(int side){
+		int num;
+		ArrayList<String> Gs;
+		
+		Gs = eqGroupings.get(side);
+		num = Gs.size();
+		
+		return num;
+	}
 	
-	/* prints the current equation in a debugging format */
-//	public String printEquation(){
-//		String data;
-//		data = "";
-//		for (Term t: leftTerms){
-//			data = data + t.printTerm();
-//		}
-//		data = data + "OTHERSIDE";
-//		for (Term u: rightTerms){
-//			data = data + u.printTerm();
-//		}
-//		data = data + "FUNCTIONS";
-//		for (String s: leftFunctions){
-//			data = data + s;
-//		}
-//		data = data + "OTHERSIDE";
-//		for (String r: rightFunctions){
-//			data = data + r;	
-//		}
-//		return data;
-//	}
+	/**Public function that gets a eqGrouping value at a specific place on specifc side of the equation
+	Parameters: (int side), numerical value of the side of the equation
+	(int num), numerical value of the grouping location
+	Return: String value of the grouping at specified place*/
+	public String getGroupingValue(int side, int num){
+		String value;
+		ArrayList<String> Gs;
+		
+		Gs = eqGroupings.get(side);
+		value = Gs.get(num);
+		
+		return value;
+	}
 	
-	/* used to during the consolidation process. removes 2 terms and then adds the new one */
-//	public void consolidateLeftTerms(int num, int num2, Term t, int mag){
-//		leftTerms.remove(num);
-//		leftTerms.remove(num2-1);
-//		leftFunctions.remove(num);
-//		leftFunctions.remove(num2-1);
-//		leftTerms.add(t);
-//		if (mag < 0){
-//			leftFunctions.add("-");
-//		}	
-//		else{
-//			leftFunctions.add("+");
-//		}
-//	}
+	/**Public function that returns the numerical value of the groupCode, ie how many erms wiht the grouping in the equation
+	Parameters: (String var), the string value of the group code
+	Return: numerical value of the groupings */
+	public int getCodeNumber(String var){
+		int num;
+		
+		num = groupCode.get(var);
+		
+		return num;
+	}
 	
+	/**Public function that is used to consolidate the terms of the equation, elminates two and adds a new one
+	Parameters: (int side), integer value of the side
+	(int num), numerical value of the first term to be removed
+	(int num2), numerical value of the second term to be removed
+	(Term t), term object to replace the two to be removed
+	(int mag), essentialy, is it positive or negative term
+	Return: VOID*/
 	public void consolidateTerms(int side, int num, int num2, Term t, int mag) {
 		ArrayList<Term> Ts;
 		ArrayList<String> Fs;
@@ -253,53 +280,42 @@ public class Equation {
 		testValue = testingApplication();
 	}
 	
-//	public void consolidateRightTerms(int num, int num2, Term t,int mag){
-//		rightTerms.remove(num);
-//		rightTerms.remove(num2-1);
-//		rightTerms.add(t);
-//		rightFunctions.remove(num);
-//		rightFunctions.remove(num2-1);
-//		if (mag < 0) {
-//			rightFunctions.add("-");
-//		}
-//		else {
-//			rightFunctions.add("+");
-//		}
-//	}
+	/**Public function that will move the terms from one side to the other
+	Parameters: (int num), numerical value of the term to be moved
+	(int side), numerical value of the side equation to move the equation from 
+	Return: VOID*/
+	public void moveTerm(int num, int side){
+		Term t;
+		ArrayList<Term> Ts,ATs;
+		ArrayList<String> Fs, AFs;
+		int antiSide;
+		String func;
+
+		if (side == 0) {
+			antiSide = 1;
+		} else {
+			antiSide = 0;
+		}
+		
+		Ts = eqTerms.get(side);
+		ATs = eqTerms.get(antiSide);
+		t = Ts.get(num);
+		Ts.remove(num);
+		ATs.add(t);
+		Fs = eqFunctions.get(side);
+		AFs = eqFunctions.get(antiSide);
+		func = Fs.get(num);
+		Fs.remove(num);
+		if (func.equals("+")) {
+			AFs.add("-");
+		} else {
+			AFs.add("+");
+		}
+	}
 	
-	/* moves term from the left side to the right side of the equation or vice versa */
-//	public void moveTerm(int num, String str){
-//		Term t;
-//		String func;
-//
-//		if (str.equals("left")){
-//			t = leftTerms.get(num);
-//			leftTerms.remove(num);
-//			rightTerms.add(t);
-//			func = leftFunctions.get(num);
-//			leftFunctions.remove(num);
-//			if (func.equals("+")) {
-//				rightFunctions.add("-");
-//			}
-//			else {	
-//				rightFunctions.add("+");
-//			}
-//		}
-//		else {
-//			t = rightTerms.get(num);
-//			rightTerms.remove(num);
-//			leftTerms.add(t);
-//			func = rightFunctions.get(num);
-//			rightFunctions.remove(num);
-//			if (func.equals("+")){
-//				leftFunctions.add("-");
-//			}
-//			else {
-//				leftFunctions.add("+");
-//			}
-//		}	
-//	}
-	
+	/**Public function that is used to get specific test values of the application
+	Parameters: NONE 
+	Return: the String value of what I want to see to do my testing*/
 	public String testingApplication(){
 		String retValue;
 		int length, newLength;
@@ -372,6 +388,46 @@ public class Equation {
 //		return eq;
 //	}
 	
+	/**Public function that consolidates the distribution terms
+	Parameters: (ArrayList<Term> newTerms), ArrayList of Terms to be added
+	(ArrayList<String> newFunctions), ArrayList of new functions to be added
+	(int cursor), value of the cursor
+	(String groupVar), String value of the grouping variable that will be eliminated
+	(int side), numerical value of the side of the equation
+	Return: VOID */
+	public void consolidateDistributiveTerms(ArrayList<Term> newTerms, ArrayList<String> newFunctions, int cursor, String groupVar, int side){
+		int num, length, funcNum;
+		ArrayList<Term> Ts;
+		ArrayList<String> Fs;
+		ArrayList<String> Gs;
+		
+		Ts = eqTerms.get(side);
+		Fs = eqFunctions.get(side);
+		Gs = eqGroupings.get(side);
+		num = newTerms.size();	
+		length = num + 1;
+		funcNum = cursor-1;
+		groupCode.remove(groupVar);
+		for (int i = 0; i < length; i++) {
+			Gs.remove(funcNum);
+			Ts.remove(funcNum);
+		}
+		length = num + 2;
+		for (int i = 0; i < length; i++){
+			Fs.remove(funcNum);
+		}
+		for (int i = 0; i < num; i++){
+			Ts.add(newTerms.get(i));
+			Fs.add(newFunctions.get(i));
+			Gs.add("NULL");
+		}
+		
+	}
+	
+	/**Public function that is used to get the directional value of the term
+	Parameters: (int side), numerical value of the side
+	(int num), numerical value of the place in the terms
+	Return: -1 or 1 if its negative or positive */
 	/* determines if the term is a negative or not */
 	public int getFunctionValue(int side, int num){
 		String func;

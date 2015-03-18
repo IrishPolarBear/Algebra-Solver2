@@ -104,10 +104,12 @@ public class MathApplication extends JFrame implements ActionListener{
 		if (eqCheck) {
 			Equation eq = new Equation(eqText);
 			Algebra_Solver algebra = new Algebra_Solver(eq);
-			algebra.combineLikeTerms();
+			//output = algebra.getDistributiveTerms("a",0);
+			//algebra.combineLikeTerms();
+			algebra.runIsolateVariableTerm("x");
 			output = eq.testingApplication();
-			output = output + "\n\n SOMETHING \n";
-			output = output + eq.testValue;
+			//output = output + "\n\n SOMETHING \n";
+			//output = output + eq.testValue;
 		} else {
 			output = ec.getErrorExplanation();
 		}
